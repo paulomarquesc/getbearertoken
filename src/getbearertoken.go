@@ -17,8 +17,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/paulomarquesc/getbearertoken/src/internal/iam"
-	"github.com/paulomarquesc/getbearertoken/src/internal/utils"
+	"github.com/paulomarquesc/getbearertoken/getbearertoken/internal/iam"
+	"github.com/paulomarquesc/getbearertoken/getbearertoken/internal/utils"
 )
 
 const (
@@ -71,7 +71,7 @@ func main() {
 	// Getting authorizer
 	auth, err := iam.GetAuthorizer()
 	if err != nil {
-		utils.ConsoleOutput(fmt.Sprintf("an error ocurred while obtaining authorizer: %v.", err), config.Stderr())
+		utils.ConsoleOutput(fmt.Sprintf("an error ocurred while obtaining authorizer: %v.", err), stderr)
 		exitCode = ERR_AUTHORIZER
 		return
 	}

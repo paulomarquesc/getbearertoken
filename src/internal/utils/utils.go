@@ -8,13 +8,11 @@
 package utils
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"strings"
 
 	"github.com/Azure/go-autorest/autorest/azure"
-	"github.com/paulomarquesc/azbloblease/azbloblease/internal/models"
 )
 
 // PrintHeader prints a header message
@@ -47,12 +45,6 @@ func FindInSlice(slice []string, val string) (int, bool) {
 		}
 	}
 	return -1, false
-}
-
-// BuildResultResponse returns the json formatted result
-func BuildResultResponse(result models.ResponseInfo) string {
-	responseJSON, _ := json.MarshalIndent(result, "", "    ")
-	return strings.Replace(string(responseJSON), "\"\"", "null", -1)
 }
 
 // Environment returns an `azure.Environment{...}` for the current cloud.
