@@ -17,8 +17,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/paulomarquesc/getbearertoken/internal/iam"
-	"github.com/paulomarquesc/getbearertoken/internal/utils"
+	"github.com/paulomarquesc/getbearertoken/src/internal/iam"
+	"github.com/paulomarquesc/getbearertoken/src/internal/utils"
 )
 
 const (
