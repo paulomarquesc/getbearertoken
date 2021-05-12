@@ -28,5 +28,14 @@ ERR_INVALID_ARGUMENT          = 4
 ERR_CERTIFICATE_NOT_FOUND     = 5
 ```
 
-## Usage Example
+## Execution Example
+
+```bash
+APP_ID=<YOUR APP ID>
+TENANT_ID=<YOUR AAD TENANT ID>
+
+./getbearertoken -applicationid $APP_ID -certificate ~/cert1.pfx -tenantid $TENANT_ID -tokenfileoutput ~/token.json
+```
+
+## Screenshot
 ![output](./.media/screenshot.png)
