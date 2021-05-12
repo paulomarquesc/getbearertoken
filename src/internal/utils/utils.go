@@ -11,8 +11,6 @@ import (
 	"fmt"
 	"log"
 	"strings"
-
-	"github.com/Azure/go-autorest/autorest/azure"
 )
 
 // PrintHeader prints a header message
@@ -45,16 +43,4 @@ func FindInSlice(slice []string, val string) (int, bool) {
 		}
 	}
 	return -1, false
-}
-
-// Environment returns an `azure.Environment{...}` for the current cloud.
-func Environment(CloudType string) *azure.Environment {
-
-	env, err := azure.EnvironmentFromName(CloudType)
-	if err != nil {
-		panic(fmt.Sprintf(
-			"invalid cloud name '%s' specified, cannot continue\n", CloudType))
-	}
-
-	return &env
 }

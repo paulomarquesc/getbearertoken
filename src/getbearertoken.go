@@ -5,20 +5,27 @@
 
 // Tool that is used to get a bearer token from certificate based authentication
 //
-// Output:
+// Outputs:
+//  - token file in json format
+//
+// Notes:
+// Autorest adal reference: https://github.com/Azure/go-autorest/tree/master/autorest/adal
 //
 
 package main
 
 import (
 	"context"
+	"crypto/rsa"
+	"crypto/x509"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 
 	"github.com/Azure/go-autorest/autorest/adal"
-	"github.com/paulomarquesc/getbearertoken/getbearertoken/internal/utils"
+	"github.com/paulomarquesc/getbearertoken/src/internal/utils"
 )
 
 const (
@@ -37,6 +44,7 @@ var (
 	tenantID          = flag.String("tenantid", "", "service principal's tenant id")
 	certificate       = flag.String("certificate", "", "full path to the certificate, pfx-formatted, containing the certificate and private key to be used in the authenticaton process")
 	pfxPassword       = flag.String("pfxpassword", "", "optional, pfx file password, it defaults to empty string")
+	tokenFileOutput   = flag.String("tokenfileoutput", "", "full filename of the generated token")
 	cmdlineversion    = flag.Bool("version", false, "shows current tool version")
 	exitCode          = 0
 	version           = "0.1.0"
@@ -45,24 +53,30 @@ var (
 )
 
 func exit(cntx context.Context, exitCode int) {
-
 	if exitCode > 0 {
 		os.Exit(exitCode)
 	}
-
 }
 
-func getOAuthConfig(tenantID string) (autorest.OAuthConfig, error) {
+func decodePkcs12(pkcs []byte, password string) (*x509.Certificate, *rsa.PrivateKey, error) {
+	return adal.DecodePfxCertificateData(pkcs, password)
+}
+
+func getOAuthConfig(tenantID string) (adal.OAuthConfig, error) {
 	oauthConfig, err := adal.NewOAuthConfig(activeDirectoryEndpoint, tenantID)
 
 	if err != nil {
-		return nil, err
+		return adal.OAuthConfig{}, err
 	}
 
-	return oauthConfig
+	return *oauthConfig, nil
 }
 
-func getTokenUsingCertificate(certificatePath, pfxPassword string, oauthConfig autorest.OAuthConfig) (string, error) {
+func getTokenUsingCertificate(certificatePath string,
+	pfxPassword string,
+	oauthConfig adal.OAuthConfig,
+	callbacks ...adal.TokenRefreshCallback) (*adal.ServicePrincipalToken, error) {
+
 	certData, err := ioutil.ReadFile(certificatePath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read the certificate file (%s): %v", certificatePath, err)
@@ -75,8 +89,8 @@ func getTokenUsingCertificate(certificatePath, pfxPassword string, oauthConfig a
 	}
 
 	spt, err := adal.NewServicePrincipalTokenFromCertificate(
-		*oauthConfig,
-		applicationID,
+		oauthConfig,
+		*applicationID,
 		certificate,
 		rsaPrivateKey,
 		resource,
@@ -85,18 +99,19 @@ func getTokenUsingCertificate(certificatePath, pfxPassword string, oauthConfig a
 		return nil, fmt.Errorf("failed to invoke NewServicePrincipalTokenFromCertificate: %v", err)
 	}
 
-	// Acquire a new access token
-	err = spt.Refresh()
-	if err != nil {
-
-		return nil, fmt.Errorf("failed to get new access token: %v", err)
-	}
-
-	return spt.Token, nil
+	return spt, spt.Refresh()
 }
 
 func main() {
 	cntx := context.Background()
+
+	callback := func(token adal.Token) error {
+		err := adal.SaveToken(*tokenFileOutput, 0600, token)
+		if err != nil {
+			return err
+		}
+		return nil
+	}
 
 	// Cleanup and exit handling
 	defer func() { exit(cntx, exitCode); os.Exit(exitCode) }()
@@ -116,33 +131,17 @@ func main() {
 		return
 	}
 
-	oAuthConfig = getOAuthConfig(tenantID)
+	oauthConfig, err := getOAuthConfig(*tenantID)
 	if err != nil {
 		utils.ConsoleOutput(fmt.Sprintf("<error> an error ocurred getting OAuth Config: %v", err), stderr)
 		exitCode = ERR_AUTH_CONFIG
 		return
 	}
 
-	token = getTokenUsingCertificate(certificate, pfxPassword, oauthConfig)
+	_, err = getTokenUsingCertificate(*certificate, *pfxPassword, oauthConfig, callback)
 	if err != nil {
 		utils.ConsoleOutput(fmt.Sprintf("<error> an error ocurred getting service principal token: %v", err), stderr)
 		exitCode = ERR_AUTH_TOKEN
 		return
 	}
-
-	println(token)
-	// // Getting authorizer
-	// auth, err := iam.GetAuthorizerFromCli()
-	// if err != nil {
-	// 	utils.ConsoleOutput(fmt.Sprintf("an error ocurred while obtaining authorizer: %v.", err), stderr)
-	// 	exitCode = ERR_AUTHORIZER
-	// 	return
-	// }
-
-	// println(auth)
-
-	// authdata := autoauth.data
-
-	// authdata
-
 }
