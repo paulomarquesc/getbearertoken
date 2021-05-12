@@ -3,14 +3,13 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-// Tool that is used to get a bearer token from certificate based authentication
+// getbearertoken - Tool that is used to get a bearer token from certificate based authentication
 //
 // Outputs:
 //  - token file in json format
 //
 // Notes:
 // Autorest adal reference: https://github.com/Azure/go-autorest/tree/master/autorest/adal
-//
 
 package main
 
@@ -29,13 +28,12 @@ import (
 )
 
 const (
-	ERR_AUTH_CONFIG               = 2
-	ERR_AUTH_TOKEN                = 3
-	ERR_INVALID_ARGUMENT          = 5
-	ERR_CERTIFICATE_NOT_FOUND     = 10
-	ERR_INVALID_AZURE_ENVIRONMENT = 11
-	activeDirectoryEndpoint       = "https://login.microsoftonline.com/"
-	resource                      = "https://management.core.windows.net/"
+	ERR_AUTH_CONFIG           = 2
+	ERR_AUTH_TOKEN            = 3
+	ERR_INVALID_ARGUMENT      = 4
+	ERR_CERTIFICATE_NOT_FOUND = 5
+	activeDirectoryEndpoint   = "https://login.microsoftonline.com/"
+	resource                  = "https://management.core.windows.net/"
 )
 
 var (
@@ -131,6 +129,14 @@ func main() {
 		return
 	}
 
+	// Checking if cert file exists
+	if _, err := os.Stat(*certificate); err != nil {
+		utils.ConsoleOutput(fmt.Sprintf("<error> certificate file %v, not found: %v", *certificate, err), stderr)
+		exitCode = ERR_CERTIFICATE_NOT_FOUND
+		return
+	}
+
+	// Getting OAuth config
 	oauthConfig, err := getOAuthConfig(*tenantID)
 	if err != nil {
 		utils.ConsoleOutput(fmt.Sprintf("<error> an error ocurred getting OAuth Config: %v", err), stderr)
@@ -138,6 +144,7 @@ func main() {
 		return
 	}
 
+	// Obtaining token
 	_, err = getTokenUsingCertificate(*certificate, *pfxPassword, oauthConfig, callback)
 	if err != nil {
 		utils.ConsoleOutput(fmt.Sprintf("<error> an error ocurred getting service principal token: %v", err), stderr)
