@@ -28,6 +28,7 @@ ERR_AUTH_CONFIG               = 2
 ERR_AUTH_TOKEN                = 3
 ERR_INVALID_ARGUMENT          = 4
 ERR_CERTIFICATE_NOT_FOUND     = 5
+ERR_CERTIFICATE               = 6
 ```
 
 ## Execution Example
