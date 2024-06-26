@@ -45,6 +45,7 @@ var (
 	pfxPassword     = flag.String("pfxpassword", "", "optional, pfx file password, it defaults to empty string")
 	tokenFileOutput = flag.String("tokenfileoutput", "", "full filename of the generated token")
 	cmdlineversion  = flag.Bool("version", false, "shows current tool version")
+	sniauth         = flag.Bool("usesniauth", false, "uses sn+i authentication option")
 	exitCode        = 0
 	version         = "1.0.0"
 	stdout          = log.New(os.Stdout, "", log.LstdFlags)
@@ -115,9 +116,13 @@ func main() {
 
 	// Get the NewClientCertificateCredential
 	utils.ConsoleOutput("Creating NewClientCertificateCredential...", stdout)
-	cred, err := azidentity.NewClientCertificateCredential(*tenantID, *applicationID, []*x509.Certificate{certificate}, rsaPrivateKey.(*rsa.PrivateKey), &azidentity.ClientCertificateCredentialOptions{
-		SendCertificateChain: true,
-	})
+
+	clientCredentialOptions := azidentity.ClientCertificateCredentialOptions{}
+	if *sniauth {
+		clientCredentialOptions.SendCertificateChain = true
+	}
+
+	cred, err := azidentity.NewClientCertificateCredential(*tenantID, *applicationID, []*x509.Certificate{certificate}, rsaPrivateKey.(*rsa.PrivateKey), &clientCredentialOptions)
 	if err != nil {
 		utils.ConsoleOutput(fmt.Sprintf("<error> an error occurred creating ClientCertificateCredential: %v", err), stderr)
 		exitCode = ERR_AUTH_CONFIG
