@@ -355,4 +355,5 @@ MigrationBackup/
 .vscode
 
 # 
-/**/getbearertoken*
+getbearertoken/getbearertoken
+getbearertoken/getbearertoken.exe
