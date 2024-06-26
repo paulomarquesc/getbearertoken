@@ -15,6 +15,8 @@ Usage of ./getbearertoken:
         service principal's tenant id
   -tokenfileoutput string
         full filename of the generated token
+  -usesniauth
+        uses sn+i authentication method
   -version
         shows current tool version
 ```
@@ -26,6 +28,7 @@ ERR_AUTH_CONFIG               = 2
 ERR_AUTH_TOKEN                = 3
 ERR_INVALID_ARGUMENT          = 4
 ERR_CERTIFICATE_NOT_FOUND     = 5
+ERR_CERTIFICATE               = 6
 ```
 
 ## Execution Example
