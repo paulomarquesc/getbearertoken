@@ -1,5 +1,5 @@
 # getbearertoken.go
-Golang tool that authenticates against Azure Active Directory using a certificate in pfx format and generates a token file.
+Golang tool that authenticates against Entra ID using a certificate in pfx format or managed identity and generates a token file.
 
 ## Usage
 
